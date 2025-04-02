@@ -1,0 +1,41 @@
+Category                      | Annotation                                             | Description
+-----------------------------|-------------------------------------------------------|---------------------------------------------------------------
+Entity & ID Annotations      | @Entity                                              | Marks a class as a JPA entity (table in DB).
+                             | @Table(name = "table_name")                          | Specifies the table name for the entity.
+                             | @Id                                                  | Marks a field as the primary key.
+                             | @GeneratedValue(strategy = GenerationType.IDENTITY)  | Auto-generates the primary key using identity strategy.
+                             | @SequenceGenerator(name = "seq_name", sequenceName = "db_sequence") | Defines a database sequence for PK generation.
+                             | @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_name") | Uses the defined sequence.
+
+Column Mapping Annotations   | @Column(name = "column_name")                        | Maps a field to a specific column.
+                             | @Column(nullable = false)                            | Ensures the column value cannot be null.
+                             | @Column(unique = true)                               | Ensures the column values are unique.
+                             | @Column(length = 255)                                | Specifies the maximum length of a string column.
+                             | @Transient                                           | Prevents a field from being persisted in the database.
+
+Relationship Mapping         | @OneToOne                                            | Defines a one-to-one relationship.
+                             | @OneToMany                                           | Defines a one-to-many relationship.
+                             | @ManyToOne                                           | Defines a many-to-one relationship.
+                             | @ManyToMany                                          | Defines a many-to-many relationship.
+                             | @JoinColumn(name = "column_name")                    | Specifies the foreign key column.
+                             | @JoinTable(name = "join_table_name")                 | Defines a join table for @ManyToMany relationships.
+                             | @MappedBy                                            | Used in bidirectional relationships to indicate the owning side.
+
+Lifecycle Callbacks          | @PrePersist                                          | Executed before saving a new entity.
+                             | @PostPersist                                         | Executed after saving a new entity.
+                             | @PreUpdate                                           | Executed before updating an entity.
+                             | @PostUpdate                                          | Executed after updating an entity.
+                             | @PreRemove                                           | Executed before deleting an entity.
+                             | @PostRemove                                          | Executed after deleting an entity.
+                             | @PostLoad                                            | Executed after loading an entity from the DB.
+
+Inheritance Strategies       | @Inheritance(strategy = InheritanceType.SINGLE_TABLE)| Specifies inheritance strategy for entity hierarchy.
+                             | @DiscriminatorColumn(name = "type")                  | Column used for distinguishing subclasses in inheritance.
+                             | @DiscriminatorValue("VALUE")                         | Specifies a value for a subclass.
+
+Other Annotations            | @Embedded                                            | Embeds another class inside an entity.
+                             | @Embeddable                                          | Marks a class as embeddable inside another entity.
+                             | @Lob                                                 | Marks a field as a Large Object (BLOB, CLOB).
+                             | @Version                                             | Used for optimistic locking (prevents concurrent updates).
+                             | @NamedQuery(name = "queryName", query = "SQL Query") | Defines a named JPQL query.
+                             | @NamedNativeQuery(name = "queryName", query = "SQL Query", resultClass = Class.class) | Defines a named native SQL query.

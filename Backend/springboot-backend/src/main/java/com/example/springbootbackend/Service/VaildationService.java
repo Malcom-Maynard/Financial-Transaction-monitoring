@@ -1,6 +1,7 @@
 package com.example.springbootbackend.Service;
 
 import com.example.springbootbackend.model.User;
+import com.example.springbootbackend.model.DTO.UserDTO;
 import com.example.springbootbackend.rabbitmq.MessageSender;
 import com.example.springbootbackend.repository.UserRepository;
 
@@ -12,6 +13,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
@@ -25,19 +27,22 @@ public class VaildationService {
     
     
     private static final Logger logger = LoggerFactory.getLogger(VaildationService.class);
-    private AbstractMap<String,String> VaildationPackage = new HashMap <String,String>();
+    private AbstractMap<String,Object> VaildationPackage = new HashMap <String,Object>();
+
+    private AbstractMap<String,Object> TestingVaildationPackage = new HashMap <String,Object>();
 
     
 
     @PersistenceContext
     private EntityManager entityManager;
 
-
+    @Autowired
+    private UserRepository userRepository; 
    
     
-    public AbstractMap<String, String> VaildateData (User user){
+    public AbstractMap<String, Object> VaildateAddUserData (User user){
         
-       /* 
+        /* 
         Backend Vaildation for User infomation
 
         O Name
@@ -79,12 +84,12 @@ public class VaildationService {
         
 
         
-        Boolean isPhoneNumberVaild = VaildPhoneNumber(user.getPhoneNumber());
-        Boolean isEmailVaild= VaildEmail(user.getEmail());
-        Boolean isNameVaild = VaildName(user.getName());
-        Boolean isPassowrdVaild = VaildPassword(user.getPassword());
-        Boolean isRoleVaild = VaildRole(user.getRole());
-        Boolean isVaildUsernameVaild = VaildUsername(user.getUsername());
+        VaildPhoneNumber(user.getPhoneNumber());
+        VaildEmail(user.getEmail());
+        VaildName(user.getName());
+        VaildPassword(user.getPassword());
+        VaildRole(user.getRole());
+        VaildUsername(user.getUsername());
         
         logger.info(VaildationPackage.toString());
         
@@ -102,10 +107,108 @@ public class VaildationService {
     }
 
 
+    public AbstractMap<String, Object> VaildateUserID (UUID UserID){
+
+        VaildUserID(UserID);
+        return TestingVaildationPackage;
+    }
+
+    public AbstractMap<String, Object> VaildatePutUserData (UserDTO user, UUID userID){
+
+        /*
+         * Vaildation needed for the put Operations
+         *  - Check first if all the feilds are blank or not
+         *      - If the feild isnt blank run the vaildation for that respected element
+         *          -Any way what is the best way to do this??
+         * 
+         * 
+         * 
+         */
+
+        VaildUserID(userID);
+
+        if(TestingVaildationPackage.size()==0){
+
+
+       
+            if (user.getName()!=null)   {
+                VaildName(user.getName());
+
+            }
+
+            if (user.getEmail()!=null){
+                VaildEmail(user.getEmail());
+
+            }
+
+            if (user.getName()!=null){
+                VaildName(user.getName());
+
+            }
+
+
+            if (user.getRole()!=null){
+                VaildRole(user.getRole());
+
+            }
+
+            if (user.getUsername()!=null){
+                VaildUsername(user.getUsername());
+
+            }
+        }
+
+
+       
+
+
+
+        
+
+
+        return VaildationPackage;
+    }
+
+
+
+    public AbstractMap<String, Object> VaildateDeleteUserData (UUID CurrentUserID, UUID DeleteUserID){
+
+        /*
+         * Vaildation needed for the put Operations
+         *  - Check if the UUCID is vaild.
+         *      - Make sure the username of the person is an "Admin"
+         *      - Make sure the person that is being removed is a user role
+         */
+
+        
+         validateUserID(DeleteUserID, "Request URL");
+         validateUserID(CurrentUserID, "Request Body");
+
+
+         if(TestingVaildationPackage.isEmpty()){
+
+            //Check the userID found in the URL
+
+            Integer RowsReturned =  userRepository.CheckUserID(DeleteUserID);
+
+
+            
+
+            
+         }
+
+
+       
+
+
+
+        
+
+
+        return VaildationPackage;
+    }
+
     
-
-
-
     private Boolean VaildName (String Name){
         
         
@@ -124,7 +227,7 @@ public class VaildationService {
     private Boolean VaildRole (String Role){
         ArrayList<String> vaildRoles = new ArrayList<>(Arrays.asList("User", "Admin", "TEST"));
         
-        if(!vaildRoles.contains(Role)){
+        if(!(vaildRoles.contains(Role))){
             VaildationPackage.put("Role", "Invaild Role: Roles can be the following; User, Admin, TEST");
             
             return false;
@@ -161,7 +264,7 @@ public class VaildationService {
 
             if(VaildationPackage.containsKey("Username")){
 
-                String Currentmsg = VaildationPackage.get("Username");
+                String Currentmsg = (String) VaildationPackage.get("Username");
                 VaildationPackage.put("Username", Currentmsg+" | Username is already in use, please use another one.");
                 logger.info("Username is already in use, please use another one");
                 vaild=false;
@@ -206,7 +309,7 @@ public class VaildationService {
 
         logger.info("FormatredPhone Number: "+FormattedPhoneNumber);
         
-        if(!FormattedPhoneNumber.matches("^[9][0-9]{9}$")){
+        if(!FormattedPhoneNumber.matches("^(?:\\+1\\s?)?(?:\\(?\\d{3}\\)?[\\s.-]?)?\\d{3}[\\s.-]?\\d{4}$")){
             logger.info("Invaild Phone number: must follow sample format (EX: 000-000-0000)");
             VaildationPackage.put("PhoneNumber", "Invaild Phone number: must follow sample format (EX: 000-000-0000)");
             
@@ -214,7 +317,7 @@ public class VaildationService {
 
         }
 
-        //Check on if username exist in the system
+        //Check on if phonenumber exist in the system
         String sql = String.format("SELECT Count(*) FROM public.\"user\" WHERE phone_number='%s'",PhoneNumber);
         logger.info("SQL: "+sql);
         Query query = entityManager.createNativeQuery(sql);
@@ -229,7 +332,7 @@ public class VaildationService {
 
             if(VaildationPackage.containsKey("PhoneNumber")){
 
-                String Currentmsg = VaildationPackage.get("PhoneNumber");
+                String Currentmsg = (String) VaildationPackage.get("PhoneNumber");
                 VaildationPackage.put("PhoneNumber", Currentmsg+" | PhoneNumber is already in use, please use another one.");
                 logger.info("PhoneNumber is already in use, please use another one");
                 vaild=false;
@@ -259,9 +362,7 @@ public class VaildationService {
             VaildationPackage.put("E-mail", "Invaild Email format must follow format XXXXX@XXXX@.XXX");
             vaild= false;
         }
-        //Check to see if the email is already within the database
-        //johndoe@example.com
-        //"Select Count(*) from public.\"user\" where 'email'='email+"\"";
+        
         String sql = String.format("SELECT Count(*) FROM public.\"user\" WHERE email='%s'",email);
         logger.info("SQL: "+sql);
         Query query = entityManager.createNativeQuery(sql);
@@ -275,7 +376,7 @@ public class VaildationService {
 
             if(VaildationPackage.containsKey("E-mail")){
 
-                String Currentmsg = VaildationPackage.get("E-mail");
+                String Currentmsg = (String) VaildationPackage.get("E-mail");
                 VaildationPackage.put("E-mail", Currentmsg+" | E mail is already in use, please use another one");
                 
                 
@@ -299,6 +400,42 @@ public class VaildationService {
         
         return vaild;
 
+
+    }
+
+    private void validateUserID(UUID userID, String source) {
+        VaildUserID(userID);
+    
+        if (!TestingVaildationPackage.isEmpty()) {
+            String currentMsg = (String) VaildationPackage.getOrDefault("userID", "");
+            VaildationPackage.put("userID", currentMsg + "(Invalid UserID found in " + source + ").");
+        }
+    }
+
+
+    private void CheckUserIDExistence(UUID userID, String source) {
+        
+        Integer ReturnedRows = userRepository.CheckUserID(userID);
+    
+        if (!TestingVaildationPackage.isEmpty() ) {
+            String currentMsg = (String) VaildationPackage.getOrDefault("userID", "");
+            VaildationPackage.put("userID", currentMsg + "(Invalid UserID found in " + source + ").");
+        }
+    }
+    
+    private Boolean VaildUserID (UUID userID){
+        logger.info("Vaildating userID");
+        
+
+        if (!userID.toString().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {  
+               
+            logger.info("Invaild UserId: please send a vaild UserID ");
+            TestingVaildationPackage.put("userID", "Invaild UserId: please send a vaild UserID ");
+            
+            return false;
+
+        }
+        return true;
 
     }
 }

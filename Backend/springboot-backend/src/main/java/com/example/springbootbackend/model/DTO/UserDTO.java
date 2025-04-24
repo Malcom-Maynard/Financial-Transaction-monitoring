@@ -1,43 +1,26 @@
-package com.example.springbootbackend.model;
+package com.example.springbootbackend.model.DTO;
 
-import com.example.springbootbackend.Service.UserService;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Entity
-public class User {
+import com.example.springbootbackend.Service.UserService;
+import com.example.springbootbackend.model.User;
 
-    @Id   
-    @GeneratedValue(generator = "UUID")
-    @Column(name = "user_id", updatable = false, nullable = false)
-    @JsonProperty("id")  // Rename "userId" to "id" in the JSON output
+public class UserDTO   {
     private UUID userId;
-
     private String name;
-
     private String role;
-
     private String phoneNumber;
-
     private String email;
-    
     private String username;
 
-     // Exclude password from the JSON response
-    private String password;
+
     
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    // Getters and Setters
+     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     public String printData (){
 
         String msg = "\n\nData for user ID: "+this.getUserId()+
@@ -45,8 +28,8 @@ public class User {
         "\n"+"role: "+this.getRole() +
         "\n"+"phoneNumber: "+this.getPhoneNumber() +
         "\n"+"email: "+this.getEmail() +
-        "\n"+"username: "+this.getUsername() +
-        "\n"+"password: "+this.getPassword()+"\n\n" ;
+        "\n"+"username: "+this.getUsername() +"\n\n";
+        
 
 
 
@@ -143,11 +126,6 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    
 }

@@ -1,8 +1,8 @@
 package com.example.springbootbackend.Service;
 
+import com.example.springbootbackend.Service.rabbitmq.MessageSender;
 import com.example.springbootbackend.model.User;
 import com.example.springbootbackend.model.DTO.UserDTO;
-import com.example.springbootbackend.rabbitmq.MessageSender;
 import com.example.springbootbackend.repository.UserRepository;
 
 import jakarta.persistence.EntityManager;
@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.springbootbackend.model.Transaction;
+
 
 @Service
 public class VaildationService {
@@ -208,7 +210,13 @@ public class VaildationService {
         return VaildationPackage;
     }
 
-    
+    public AbstractMap<String, Object>  validateTransactionInfomation (Transaction transac){
+
+
+
+        return VaildationPackage;
+        
+    }
     private Boolean VaildName (String Name){
         
         
@@ -413,6 +421,7 @@ public class VaildationService {
     }
 
 
+    
     private void CheckUserIDExistence(UUID userID, String source) {
         
         Integer ReturnedRows = userRepository.CheckUserID(userID);
@@ -422,6 +431,8 @@ public class VaildationService {
             VaildationPackage.put("userID", currentMsg + "(Invalid UserID found in " + source + ").");
         }
     }
+    
+    
     
     private Boolean VaildUserID (UUID userID){
         logger.info("Vaildating userID");

@@ -11,6 +11,9 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,6 +24,11 @@ public class RabbitMQConfig {
     public static final String QUEUE_NAME = "TransactionQ";
     public static final String EXCHANGE_NAME = "Transaction-Exchange";
     public static final String ROUTING_KEY = "Transaction-Q-Key";
+    public static final String ROUTING_KEY_IN = "Transaction-Q-IN";
+    public static final String ROUTING_KEY_OUT = "Transaction-Q-Out";
+
+    public static final String QUEUE_INBOUND = "Transaction-Q-IN";
+    public static final String QUEUE_OUTBOUND = "Transaction-Q-Out";
 
     @Bean
     public Queue queue() {
@@ -35,5 +43,18 @@ public class RabbitMQConfig {
     @Bean
     public Binding binding(Queue queue, DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    }
+
+
+     @Bean
+    public Jackson2JsonMessageConverter messageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    @Bean
+    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(messageConverter());
+        return rabbitTemplate;
     }
 }

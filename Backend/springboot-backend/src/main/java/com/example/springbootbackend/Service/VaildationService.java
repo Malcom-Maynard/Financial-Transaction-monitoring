@@ -92,6 +92,7 @@ public class VaildationService {
         VaildPassword(user.getPassword());
         VaildRole(user.getRole());
         VaildUsername(user.getUsername());
+        vaildateLocation(user.getAddress());
         
         logger.info(VaildationPackage.toString());
         
@@ -193,6 +194,23 @@ public class VaildationService {
 
             Integer RowsReturned =  userRepository.CheckUserID(DeleteUserID);
 
+            if(RowsReturned!=1){
+
+                VaildationPackage.put("userID",   "User To be deleted doesnt exist in Backend, please try again with Current user" );
+
+            }
+
+            else{
+                String Role = userRepository.GetUserRole(CurrentUserID);
+
+                if (!Role.equals("Admin")){
+                    VaildationPackage.put("userID",   "Non-Admins can not delelte users." );
+
+                }
+
+
+            }
+
 
             
 
@@ -210,7 +228,22 @@ public class VaildationService {
         return VaildationPackage;
     }
 
-    public AbstractMap<String, Object>  validateTransactionInfomation (Transaction transac){
+    public AbstractMap<String, Object>  validateTransactionInfomation (Transaction transaction){
+        /* 
+        Backend Vaildation for User infomation
+
+        O userID
+            - check make sure the user ID is vaild
+            - make sure that the USER_id exist in the system
+        
+        O Location
+            -  Make sure that the location is a string        
+         */
+
+        
+        VaildUserID(transaction.getUserId());
+        CheckUserIDExistence(transaction.getUserId());
+        vaildateLocation(transaction.getLocation());
 
 
 
@@ -249,7 +282,7 @@ public class VaildationService {
 
     private Boolean VaildUsername (String Username){
         Boolean vaild = true;
-        if (!Username.matches("^(?=.*[A-Za-z0-9!_-])[A-Za-z0-9!_-]{6,}$")){
+        if (!Username.trim().matches("^(?=.*[A-Za-z0-9!_-])[A-Za-z0-9!_-]{6,}$")){
             logger.info("Invaild Username: Username is not vaild");
             VaildationPackage.put("Username", "Invaild Username: Username is not vaild");
             
@@ -267,7 +300,7 @@ public class VaildationService {
 
         Integer UsernameCount = Integer.parseInt(query.getResultList().get(0).toString());
 
-        if (UsernameCount>0){
+        if (UsernameCount>1){
 
 
             if(VaildationPackage.containsKey("Username")){
@@ -295,11 +328,12 @@ public class VaildationService {
 
     private Boolean VaildPassword (String Password){
         
-        logger.info("Vaildating PAssword");
-        
-        if (!Password.matches("^(?=.*\\d.*\\d)(?=.*[!@#$%^&*()_+=\\-\\[\\]{}|;:'\",.<>?/`~])[A-Za-z0-9!@#$%^&*()_+=\\-\\[\\]{}|;:'\",.<>?/`~]{6,}$")) {     
+        logger.info("Vaildating PAssword: "+Password);
+        String newValue = Password.trim();
+
+        if (!newValue.trim().matches("^(?=.*\\d.*\\d)(?=.*[!@#$%^&*()_+=\\-\\[\\]{}|;:'\",.<>?/`~])[A-Za-z0-9!@#$%^&*()_+=\\-\\[\\]{}|;:'\",.<>?/`~]{6,}$")) {     
             
-            logger.info("Invaild Password: Invaild Password: Password must follow the following: Made from numbers , characters and speical characters");
+            logger.info("(VaildPassword)Invaild Password: Invaild Password: Password must follow the following: Made from numbers , characters and speical characters");
             VaildationPackage.put("Password", "Invaild Password: Password must follow the following: Made from numbers , characters and speical characters");
             
             return false;
@@ -317,7 +351,7 @@ public class VaildationService {
 
         logger.info("FormatredPhone Number: "+FormattedPhoneNumber);
         
-        if(!FormattedPhoneNumber.matches("^(?:\\+1\\s?)?(?:\\(?\\d{3}\\)?[\\s.-]?)?\\d{3}[\\s.-]?\\d{4}$")){
+        if(!FormattedPhoneNumber.trim().matches("^(?:\\+1\\s?)?(?:\\(?\\d{3}\\)?[\\s.-]?)?\\d{3}[\\s.-]?\\d{4}$")){
             logger.info("Invaild Phone number: must follow sample format (EX: 000-000-0000)");
             VaildationPackage.put("PhoneNumber", "Invaild Phone number: must follow sample format (EX: 000-000-0000)");
             
@@ -327,7 +361,7 @@ public class VaildationService {
 
         //Check on if phonenumber exist in the system
         String sql = String.format("SELECT Count(*) FROM public.\"user\" WHERE phone_number='%s'",PhoneNumber);
-        logger.info("SQL: "+sql);
+        logger.info("SQL(Phone number count): "+sql);
         Query query = entityManager.createNativeQuery(sql);
         logger.info("Vaildation Username Count: "+query.getResultList().get(0));
         
@@ -335,7 +369,7 @@ public class VaildationService {
 
         Integer UsernameCount = Integer.parseInt(query.getResultList().get(0).toString());
 
-        if (UsernameCount>0){
+        if (UsernameCount>1){
 
 
             if(VaildationPackage.containsKey("PhoneNumber")){
@@ -380,7 +414,7 @@ public class VaildationService {
 
         Integer EmailCount = Integer.parseInt(query.getResultList().get(0).toString());
 
-        if (EmailCount>0){
+        if (EmailCount>1){
 
             if(VaildationPackage.containsKey("E-mail")){
 
@@ -420,22 +454,44 @@ public class VaildationService {
         }
     }
 
+    private void vaildateLocation (String Location){
 
+         if (!Location.toString().trim().matches("^(.+?),\\s*([A-Za-z\\s]+),\\s*([A-Za-z\\s]+),\\s*(\\d{5,6}),\\s*([A-Za-z\\s]+)$\n" + //
+"")) {  
+               
+            logger.info("Invaild Location: please send a Location data ");
+            TestingVaildationPackage.put("Location", "Invaild format of Location, please follow the following format City, 'State/Province, Country, Area Code' ");
+            
+            
+
+        }
+        
+
+    }
     
-    private void CheckUserIDExistence(UUID userID, String source) {
+    private void CheckUserIDExistence(UUID userID) {
         
         Integer ReturnedRows = userRepository.CheckUserID(userID);
-    
-        if (!TestingVaildationPackage.isEmpty() ) {
-            String currentMsg = (String) VaildationPackage.getOrDefault("userID", "");
-            VaildationPackage.put("userID", currentMsg + "(Invalid UserID found in " + source + ").");
+        logger.info("NUMEBR OF ROWS RETURNED: "+ReturnedRows.toString());
+        if (ReturnedRows>1){
+
+            //If there is Data already in vaildation package
+            if (TestingVaildationPackage.get("userID") != null ) {
+                String currentMsg = (String) VaildationPackage.getOrDefault("userID", "");
+                VaildationPackage.put("userID", currentMsg + "UserID not found in Backend");
+            }
+
+
         }
+
+         
+       
     }
     
     
     
     private Boolean VaildUserID (UUID userID){
-        logger.info("Vaildating userID");
+        logger.info("Vaildating userID: ",userID);
         
 
         if (!userID.toString().matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {  
@@ -449,4 +505,13 @@ public class VaildationService {
         return true;
 
     }
+
+
+    
+
+
+
+
+
+
 }

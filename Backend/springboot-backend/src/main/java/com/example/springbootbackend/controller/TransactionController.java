@@ -5,6 +5,7 @@ import com.example.springbootbackend.model.Transaction;
 import com.example.springbootbackend.model.User;
 import com.example.springbootbackend.repository.UserRepository;
 import com.example.springbootbackend.Service.*;
+import com.example.springbootbackend.Service.rabbitmq.MessageConsumer;
 import com.example.springbootbackend.Service.rabbitmq.MessageSender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,24 +26,43 @@ public class TransactionController {
     
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
  
+    
+
     @Autowired
-    private MessageSender messageSender;
+    private MessageConsumer messageConsumer;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @PostMapping("/add")
     public ResponseEntity<Object> addUser(@RequestBody Transaction transaction ) throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(transaction);
+        
 
         logger.info("API route Called(Transaction): '/add'");
         logger.info("(Transaction): '/add - Infomation from request: "+json);
         
-        messageSender.sendMessage(json);
         
+        AbstractMap<String,Object> VaildationData = transactionService.createTransaction(transaction);
+
+        logger.info("VaildationData sIZE "+VaildationData.size());
+
+        if(VaildationData.size()!=0){
+            logger.info("ERROR: Issue with Transaction Data being sent from API call ");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VaildationData);
+
+        }
 
 
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Testing");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Transaction infomation Created");
+
+       
+
+
+
         
     }
 

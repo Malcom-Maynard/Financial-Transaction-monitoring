@@ -17,11 +17,26 @@ import jakarta.transaction.Transactional;
 public interface UserRepository extends JpaRepository<User, UUID> {
 
 
+    @Query("SELECT address FROM User u WHERE u.userId = :userID")
+    String GetUsersAddress(@Param("userID") UUID userID);
+
     @Query("SELECT u FROM User u WHERE u.userId = :userID")
     User findUsersByUserID(@Param("userID") UUID userID);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.userId = :userID")
     Integer CheckUserID(@Param("userID") UUID userID);
+
+
+    @Query("SELECT role FROM User u WHERE u.userId = :userID")
+    String GetUserRole(@Param("userID") UUID userID);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM User u WHERE u.userId = :userID")
+    Integer DeleteUser(@Param("userID") UUID userID);
+
+
+     
 
 
     @Modifying
@@ -35,7 +50,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             email = COALESCE(input.email, "user".email),
             phone_number = COALESCE(input.phone_number, "user".phone_number),
             username = COALESCE(input.username, "user".username),
-            role = COALESCE(input.role, "user".role)
+            role = COALESCE(input.role, "user".role),
+            address = COALESCE(input.address, "user".address)
 
 
         FROM input

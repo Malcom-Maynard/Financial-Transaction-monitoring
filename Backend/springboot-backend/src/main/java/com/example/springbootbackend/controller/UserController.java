@@ -165,7 +165,7 @@ public class UserController {
     
             }
             
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("");
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("User has been deleted");
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

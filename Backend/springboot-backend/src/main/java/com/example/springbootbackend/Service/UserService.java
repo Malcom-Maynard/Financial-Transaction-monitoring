@@ -91,6 +91,7 @@ public class UserService {
 
         
         logger.info("UserID being passed: "+userID);
+        logger.info("New Person Data: "+UserUpdateInfo.getAddress());
 
         AbstractMap<String, Object> VaildationMessages = ValdSer.VaildatePutUserData(UserUpdateInfo,userID);
         
@@ -133,6 +134,7 @@ public class UserService {
         if (VaildationMessages.size()==0){
 
             logger.error("Vaild UserID, going to get infomation from backend ");
+            userRepository.DeleteUser(UserIDDeletedUser);
             
         }
 

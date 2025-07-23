@@ -34,6 +34,8 @@ public class User {
     
     private String username;
 
+    private String address;
+
      // Exclude password from the JSON response
     private String password;
     
@@ -45,6 +47,7 @@ public class User {
         "\n"+"role: "+this.getRole() +
         "\n"+"phoneNumber: "+this.getPhoneNumber() +
         "\n"+"email: "+this.getEmail() +
+        "\n"+"Address: "+this.getAddress()+
         "\n"+"username: "+this.getUsername() +
         "\n"+"password: "+this.getPassword()+"\n\n" ;
 
@@ -99,8 +102,19 @@ public class User {
         return userId;
     }
 
+
     public void setUserId(UUID userId) {
         this.userId = userId;
+    }
+
+
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String Address) {
+        this.address= Address;
     }
 
     public String getName() {

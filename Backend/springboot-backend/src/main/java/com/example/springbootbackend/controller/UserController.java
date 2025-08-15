@@ -18,10 +18,13 @@ import org.slf4j.LoggerFactory;
 import java.util.AbstractMap;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 
 @RestController
 @RequestMapping("/users")
+
 public class UserController {
 
     @Autowired

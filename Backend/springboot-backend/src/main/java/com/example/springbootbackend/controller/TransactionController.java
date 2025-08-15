@@ -9,12 +9,15 @@ import com.example.springbootbackend.Service.rabbitmq.MessageConsumer;
 import com.example.springbootbackend.Service.rabbitmq.MessageSender;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import java.util.AbstractMap;
 import java.util.Optional;
@@ -22,6 +25,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/Transaction")
+//@PreAuthorize("isAuthenticated()") 
 public class TransactionController {
     
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -34,8 +38,9 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
+    
     @PostMapping("/add")
-    public ResponseEntity<Object> addUser(@RequestBody Transaction transaction ) throws JsonProcessingException {
+    public ResponseEntity<Object> addTransaction(@RequestBody Transaction transaction ) throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(transaction);

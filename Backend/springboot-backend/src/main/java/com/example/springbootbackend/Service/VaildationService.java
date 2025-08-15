@@ -2,6 +2,7 @@ package com.example.springbootbackend.Service;
 
 import com.example.springbootbackend.Service.rabbitmq.MessageSender;
 import com.example.springbootbackend.model.User;
+import com.example.springbootbackend.model.UserCacheData;
 import com.example.springbootbackend.model.DTO.UserDTO;
 import com.example.springbootbackend.repository.UserRepository;
 
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.springbootbackend.model.Transaction;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Service
 public class VaildationService {
@@ -172,7 +175,39 @@ public class VaildationService {
         return VaildationPackage;
     }
 
+     public String vaildatingUserCache (UserCacheData CachedData){
+        String Vaild = "GOOD!";
 
+
+        /*
+         * Checks on the Object
+         * 
+         * 1. check if the object is null
+         *  a) Check if the transaction cache has atleast 10 values inside
+         *  b) Make sure that data is not too old
+         *      - Ex check that the data isnt more than 5 months old
+         *      - Need to add something on the UserCahce data to update the last pulled date and also add in the feild
+         */
+
+         if(CachedData==null){return "Null";};
+
+         if(CachedData.getTransactions().size()!=10){return "TransactionSize";}
+
+        LocalDateTime LastUpdated = LocalDateTime.parse(CachedData.getLastUpdated());
+        LocalDateTime CurrentDateTime = LocalDateTime.now();
+         Duration dur = Duration.between(LastUpdated, CurrentDateTime);
+
+         if(dur.toDays()>152){
+            return "OutOfDatePersonalInfomation";
+         }
+
+
+
+
+
+
+        return Vaild;
+    }
 
     public AbstractMap<String, Object> VaildateDeleteUserData (UUID CurrentUserID, UUID DeleteUserID){
 
@@ -507,6 +542,7 @@ public class VaildationService {
     }
 
 
+   
     
 
 

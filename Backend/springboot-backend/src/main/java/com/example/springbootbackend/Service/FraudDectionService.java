@@ -4,6 +4,7 @@ package com.example.springbootbackend.Service;
 import com.example.springbootbackend.model.Alerts;
 import com.example.springbootbackend.model.Transaction;
 import com.example.springbootbackend.model.User;
+import com.example.springbootbackend.model.UserCacheData;
 import com.example.springbootbackend.model.DTO.UserDTO;
 import com.example.springbootbackend.repository.AlertsRepository;
 import com.example.springbootbackend.repository.TransactionRepository;
@@ -31,7 +32,8 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.example.springbootbackend.Service.VaildationService;
-import com.example.springbootbackend.Service.Reddis.RedisTransactionArrayService;
+import com.example.springbootbackend.Service.Reddis.RedisUserCacheService;
+import com.example.springbootbackend.Service.Reddis.RedisUserCacheService;
 import com.example.springbootbackend.Service.rabbitmq.MessageSender;
 import com.example.springbootbackend.model.User;
 import java.util.stream.Collectors;
@@ -94,8 +96,10 @@ public class FraudDectionService {
     AlertsRepository AlertsDBRepo;
 
 
+   @Autowired
+   VaildationService vaildation;
    @Autowired    
-   RedisTransactionArrayService CahceTransaction;
+   RedisUserCacheService CahceTransaction;
    
 
 
@@ -114,11 +118,21 @@ public class FraudDectionService {
         
         Alerts alerts= new Alerts();
 
-      //CACHE THIS DATA INTO REDDIS
-        String UserLocation = UserDBRepo.GetUsersAddress(transaction.getUserId());
-
+         String UserLocation="";
         
-      
+
+        UserCacheData CachedInfo= CahceTransaction.getUserCache(transaction.getUserId().toString());
+
+         // if the cache is empty for this person I will pull the infomation from the DB and place it in 
+         // What if I make a method that checks the cached data  to make sure it isnt null or what ever. i can make a new method in the vaildation service that makers the calls for me
+
+
+        String VaildCache = vaildation.vaildatingUserCache(CachedInfo);
+       
+        if (!VaildCache.equalsIgnoreCase("GOOD!")){}
+       
+        
+        UserLocation =CachedInfo.getAddress();
         String UserLocationFormated = UserLocation.split(",")[1] +", "+ProvinceShortFormConversion(UserLocation.split(",")[2]);
         String TransactionLocationFormated = TransactionCity+", "+TransactionProvince;
   
@@ -129,9 +143,7 @@ public class FraudDectionService {
 
          // CACHE DATA INTO REDDIS
          //Uses Reddis to call the the the data for this
-         
-
-         List<Transaction> UserTransactions = new ArrayList<>(CahceTransaction.getList(transaction.getUserId().toString()));
+         List<Transaction> UserTransactions = new ArrayList<>(CahceTransaction.getUserCache(transaction.getUserId().toString()).getTransactions());
 
          if (UserTransactions.size()<10){
 
@@ -140,16 +152,10 @@ public class FraudDectionService {
             
             UserTransactions.addAll(UserTransactionsFromDB);
 
-            CahceTransaction.saveList(transaction.getUserId().toString(),UserTransactions);
+            CahceTransaction.updateUserTransactions(transaction.getUserId().toString(),UserTransactions);
          }
          
-
-         //List<Transaction> UserTransactions = TransactionDBRepo.UserLastNTransactions(transaction.getUserId(), 10);
-       
-         
-
-
-         
+    
          double[] bounds = calculateBounds(UserTransactions, LocalDate.now(), 10.0);
          
          logger.info("AnaylizeTransaction - Lower Bound: "+bounds[0]); 
@@ -178,11 +184,7 @@ public class FraudDectionService {
         
          - if NOT fraudulent
             o add into Database and give it a 'approved' status 
-            o Use RabbitMQ to send data into a Service that will process it into Reddis
-
-        
-        
-             
+            o Use RabbitMQ to send data into a Service that will process it into Reddis      
         */ 
 
         if(fraudulent){
@@ -199,7 +201,7 @@ public class FraudDectionService {
          transaction.setStatus("APPROVED");
 
          UserTransactions.add(transaction);
-         CahceTransaction.saveList(transaction.getUserId().toString(), UserTransactions);
+         CahceTransaction.addTransaction(transaction.getUserId().toString(), transaction);
 
      
 
@@ -322,7 +324,18 @@ public class FraudDectionService {
 
       return ShortenProvince;
      }
+   private UserCacheData AddingToCache(Transaction transaction){
+      UserCacheData CachedInfo = new UserCacheData();
+      /*
+       * Make 3 calls to the DB
+       *    1. for Transaction infomation
+       *    2. Address infomation
+       *    3. E-mail infomation
+       */
 
+      return CachedInfo;
+
+   } 
 
       private static Double SampleStandardDev (List<Transaction> transactions , double mean){
       Double SD = 0.0;

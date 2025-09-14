@@ -10,12 +10,14 @@ import com.example.springbootbackend.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.lang.foreign.Linker.Option;
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,16 +111,51 @@ public class TransactionService {
         AbstractMap<String, Object> VaildationMessages = ValdSer.VaildateTransactionGet(transactionID,transaction);
         
         // Save user to the database via the repository
+
+        //Pull the transaction from the cache if its there or from the Database if its not
         if (VaildationMessages.size()==0){
 
-            logger.error("Vaild : no isue vaildatting transaction detials ");
-            
-        }
+            //Pull from Cache
+            Transaction transactionData = CahceTransaction.getTransactionById(transaction.getUserId().toString(), transactionID.toString());
 
-        else{
-            logger.error("Error: issue vaildatting transaction detials ");
+            if(transactionData != null){
+                String json = mapper.writeValueAsString(transactionData);
+                logger.info("Transaction Data found in Cache: " + json);
+                VaildationMessages.put("Transaction Data", transactionData);
+                return VaildationMessages;
+            }
+
+            //Not found in cache, checking the Database
+
+            else{
+                Optional<Transaction> transactionDataDB = transactionRepo.findById(transactionID);
+                if(transactionDataDB.isPresent()){
+                    String json = mapper.writeValueAsString(transactionDataDB.get());
+                    logger.info("Transaction Data found in Database: " + json);
+                    VaildationMessages.put("Transaction Data", transactionDataDB.get());
+                    return VaildationMessages;
+                }
+                else{
+                    logger.error("No Transaction Data found in Database for Transaction ID: " + transactionID);
+                    VaildationMessages.put("Error","No Transaction Data found for Transaction ID: " + transactionID);
+                    return VaildationMessages;
+                }
+                
+            }
+                
             
-        }
+
+            
+            
+
+
+            }
+            logger.error("Vaild(Get) : no isue vaildatting transaction details ");
+
+            
+        
+
+       
 
         
         return VaildationMessages;

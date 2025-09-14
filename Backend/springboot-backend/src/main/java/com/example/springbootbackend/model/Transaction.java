@@ -41,7 +41,16 @@ public class Transaction {
    
 
 
-    
+    public Transaction() {
+    }
+
+    public Transaction( UUID userId, Double amount, LocalDateTime transaction_date, String location, String status) {
+        this.userId = userId;
+        this.amount = amount;
+        this.transaction_date = transaction_date;
+        this.location = location;
+        this.status = status;
+    }
 
     @Id
     @Column(name = "transaction_id", updatable = false, nullable = false)

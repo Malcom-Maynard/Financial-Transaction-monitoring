@@ -60,7 +60,7 @@ public class TransactionController {
 
     // GET transaction API call   
 
-    @GetMapping("/{id}")
+    @GetMapping("/{transactionID}")
     public ResponseEntity<Object> getTransactionById(@PathVariable String transactionID,@RequestBody Transaction transaction) throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -78,8 +78,21 @@ public class TransactionController {
 
         AbstractMap<String,Object> VaildationData = transactionService.getTransaction(uuid,transaction);
 
+        logger.info("VaildationData SIZE(Transaction get): " + VaildationData);
 
-        return null;
+            if (VaildationData.size() != 0 && !VaildationData.containsKey("Transaction Data")) {
+                logger.info("ERROR: Issue with Transaction Data being sent from API call ");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(VaildationData);
+            }
+
+            if (VaildationData.containsKey("Transaction Data")) {
+                String Data = mapper.writeValueAsString(VaildationData.get("Transaction Data"));
+                logger.info("Transaction information Found successfully with status: " + VaildationData.get("Transaction Data").toString());
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .body("Transaction information Found: " + Data);
+            }
+        return ResponseEntity.status(HttpStatus.CREATED).body("Transaction information Created: " + VaildationData.get("Transaction Data").toString());
+    
         
     }
 

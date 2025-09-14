@@ -81,5 +81,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     Double AverageTransactionAmountTotal();
 
 
+
+
+   @Query("""
+       SELECT new com.example.springbootbackend.model.Transaction(
+           u.userId,
+           u.amount,
+           u.transaction_date,
+           u.location,
+           u.status
+      
+           
+       )
+       FROM Transaction u
+       WHERE u.userId = :userID
+       """)
+    Transaction GetTransaction(@Param("transactionID") UUID transactionID, @Param("userID") UUID userID);
+
+
     
 }

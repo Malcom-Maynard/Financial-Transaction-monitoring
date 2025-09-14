@@ -102,5 +102,17 @@ public class RedisUserCacheService {
         return false;
     }
 
+    public Transaction getTransactionById(String userId, String transactionId) {
+    UserCacheData existing = getUserCache(userId);
+    if (existing != null && existing.getTransactions() != null) {
+        for (Transaction tx : existing.getTransactions()) {
+            if (tx.getTransactionId().toString().equals(transactionId)) {
+                return tx;
+            }
+        }
+    }
+    return null;
+}
+
     
 }

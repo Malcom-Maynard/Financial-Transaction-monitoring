@@ -2,7 +2,9 @@ package com.example.springbootbackend.repository;
 
 
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.example.springbootbackend.model.User;
+import com.example.springbootbackend.model.DTO.UserPersonalInfoDTO;
 
 import jakarta.transaction.Transactional;
 
@@ -20,11 +23,38 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT address FROM User u WHERE u.userId = :userID")
     String GetUsersAddress(@Param("userID") UUID userID);
 
+    @Query("SELECT email FROM User u WHERE u.userId = :userID")
+    String GetUsersEmail(@Param("userID") UUID userID);
+
+    @Query("SELECT role FROM User u WHERE u.userId = :userID")
+    String GetUsersRole(@Param("userID") UUID userID);
+
+    @Query("SELECT username FROM User u WHERE u.userId = :userID")
+    String GetUsersUsername(@Param("userID") UUID userID);
+
     @Query("SELECT u FROM User u WHERE u.userId = :userID")
     User findUsersByUserID(@Param("userID") UUID userID);
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.userId = :userID")
     Integer CheckUserID(@Param("userID") UUID userID);
+
+
+   @Query("""
+       SELECT new com.example.springbootbackend.model.DTO.UserPersonalInfoDTO(
+           u.username,
+           u.role,
+           u.address,
+           u.email,
+           u.userId,
+           u.phoneNumber,
+           u.name
+           
+       )
+       FROM User u
+       WHERE u.userId = :userID
+       """)
+Optional<UserPersonalInfoDTO> getUserPersonalInfo(@Param("userID") UUID userID);
+
 
 
     @Query("SELECT role FROM User u WHERE u.userId = :userID")
@@ -34,9 +64,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Transactional
     @Query("DELETE FROM User u WHERE u.userId = :userID")
     Integer DeleteUser(@Param("userID") UUID userID);
-
-
-     
 
 
     @Modifying

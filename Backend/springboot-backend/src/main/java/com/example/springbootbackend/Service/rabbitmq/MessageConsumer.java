@@ -42,9 +42,6 @@ public class MessageConsumer {
         Boolean Result = FradDection.AnaylizeTransaction(message);
         logger.info("MessageConsumer- Result value : "+Result);
         
-        
-
-
     }
 
 

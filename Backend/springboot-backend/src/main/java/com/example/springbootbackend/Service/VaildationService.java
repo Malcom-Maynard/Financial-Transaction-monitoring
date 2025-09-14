@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,7 +188,12 @@ public class VaildationService {
          *  b) Make sure that data is not too old
          *      - Ex check that the data isnt more than 5 months old
          *      - Need to add something on the UserCahce data to update the last pulled date and also add in the feild
-         */
+         */ 
+
+        if(CachedData==null){
+            logger.info("VaildationService: UserCacheData is null");
+            return "Null";
+        }
 
          if(CachedData==null){return "Null";};
 
@@ -221,31 +227,17 @@ public class VaildationService {
         
          validateUserID(DeleteUserID, "Request URL");
          validateUserID(CurrentUserID, "Request Body");
-
+        
 
          if(TestingVaildationPackage.isEmpty()){
 
-            //Check the userID found in the URL
-
-            Integer RowsReturned =  userRepository.CheckUserID(DeleteUserID);
-
-            if(RowsReturned!=1){
-
-                VaildationPackage.put("userID",   "User To be deleted doesnt exist in Backend, please try again with Current user" );
-
-            }
-
-            else{
-                String Role = userRepository.GetUserRole(CurrentUserID);
+            //Check the userID found in the URL 
+            String Role = userRepository.GetUserRole(CurrentUserID);
 
                 if (!Role.equals("Admin")){
                     VaildationPackage.put("userID",   "Non-Admins can not delelte users." );
 
                 }
-
-
-            }
-
 
             
 
@@ -263,7 +255,9 @@ public class VaildationService {
         return VaildationPackage;
     }
 
+    
     public AbstractMap<String, Object>  validateTransactionInfomation (Transaction transaction){
+
         /* 
         Backend Vaildation for User infomation
 
@@ -277,7 +271,6 @@ public class VaildationService {
 
         
         VaildUserID(transaction.getUserId());
-        CheckUserIDExistence(transaction.getUserId());
         vaildateLocation(transaction.getLocation());
 
 
@@ -299,6 +292,48 @@ public class VaildationService {
 
 
     }
+
+    public AbstractMap<String, Object> VaildateTransactionGet( UUID transactionID, Transaction transaction){
+         /* 
+        Backend Vaildation for Trssansaction infomation & if passed UserID
+
+        O TransactionID
+            - check make sure the TransactionID is vaild (UUID format)
+            - make sure that the TransactionID exist in the system
+        
+        O UserID
+            - Check if the UserID is not empty
+                - check make sure the user ID is vaild
+                - make sure that the USER_id exist in the system   
+         */
+        VaildTransactionID(transactionID.toString());
+        validateUserID(transaction.getUserId(), "Request Body");
+        
+        return VaildationPackage;
+    }
+
+
+    private Boolean VaildTransactionID (String ID){
+        String Pattern= "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+        Boolean vaild = true;
+         logger.info("Vaildating TransactionID: "+ID);
+        if(!ID.matches(Pattern)){
+            logger.info("Invaild TransactionID: TransactionID is not vaild");
+            VaildationPackage.put("TransactionID", "Invaild TransactionID: TransactionID is not vaild");
+            
+            vaild = false;
+
+        }
+        else{
+            
+        }
+        return vaild;
+        
+    }
+
+
+    
+
 
     private Boolean VaildRole (String Role){
         ArrayList<String> vaildRoles = new ArrayList<>(Arrays.asList("User", "Admin", "TEST"));
@@ -487,12 +522,13 @@ public class VaildationService {
             String currentMsg = (String) VaildationPackage.getOrDefault("userID", "");
             VaildationPackage.put("userID", currentMsg + "(Invalid UserID found in " + source + ").");
         }
+
+        CheckUserIDExistence(userID);
     }
 
     private void vaildateLocation (String Location){
 
-         if (!Location.toString().trim().matches("^(.+?),\\s*([A-Za-z\\s]+),\\s*([A-Za-z\\s]+),\\s*(\\d{5,6}),\\s*([A-Za-z\\s]+)$\n" + //
-"")) {  
+         if (!Location.toString().trim().matches("^.+?,\\s*.+?,\\s*.+?,\\s*[A-Za-z]\\d[A-Za-z]\\s?\\d[A-Za-z]\\d,\\s*.+$")) {  
                
             logger.info("Invaild Location: please send a Location data ");
             TestingVaildationPackage.put("Location", "Invaild format of Location, please follow the following format City, 'State/Province, Country, Area Code' ");

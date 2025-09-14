@@ -8,8 +8,13 @@ import jakarta.persistence.SequenceGenerator;
 
 import com.example.springbootbackend.Service.UserService;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import jakarta.persistence.Entity;
@@ -20,6 +25,7 @@ import jakarta.persistence.Column;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -51,9 +57,13 @@ public class Transaction {
 
       private Double amount;
     
-     @CreationTimestamp
-    @Column(name = "transaction_date")
-      private OffsetDateTime  transaction_date;
+        @CreationTimestamp
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @Column(name = "transaction_date")
+        private LocalDateTime transaction_date;
+
+      
 
 
       private String location;
@@ -93,11 +103,14 @@ public class Transaction {
          this.amount = amount;
      }
  
-     public OffsetDateTime getTransaction_date() {
+     public LocalDateTime getTransaction_date() {
+        if(transaction_date == null){
+            return  LocalDateTime.now();
+        }
          return transaction_date;
      }
  
-     public void setTransaction_date(OffsetDateTime transaction_date) {
+     public void setTransaction_date(LocalDateTime transaction_date) {
          this.transaction_date = transaction_date;
      }
  

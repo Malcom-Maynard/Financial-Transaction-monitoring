@@ -40,6 +40,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         SELECT *
         FROM Transaction
         WHERE user_id = :userID
+        and status != 'DECLINED'
         ORDER BY transaction_date DESC
         LIMIT :N
     ) sub
@@ -78,4 +79,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         
         """, nativeQuery = true)
     Double AverageTransactionAmountTotal();
+
+
+    
 }

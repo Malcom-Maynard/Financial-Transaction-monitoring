@@ -3,12 +3,14 @@ package com.example.springbootbackend.Service;
 
 import com.example.springbootbackend.model.Transaction;
 import com.example.springbootbackend.model.User;
+import com.example.springbootbackend.model.UserCacheData;
 import com.example.springbootbackend.model.DTO.UserDTO;
 import com.example.springbootbackend.repository.TransactionRepository;
 import com.example.springbootbackend.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.AbstractMap;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.example.springbootbackend.Service.VaildationService;
+import com.example.springbootbackend.Service.Reddis.RedisUserCacheService;
 import com.example.springbootbackend.Service.rabbitmq.MessageSender;
 import com.example.springbootbackend.model.User;
 
@@ -37,69 +40,91 @@ public class TransactionService {
     @Autowired
     private MessageSender messageSender;
 
+    @Autowired    
+    private RedisUserCacheService CahceTransaction;
+
     private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
-    ObjectMapper mapper = new ObjectMapper();
-    
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    // Method to create a new user
-    public AbstractMap<String,Object> createTransaction(Transaction transaction) throws JsonProcessingException {
+    // Method to create a new transaction
+    public AbstractMap<String, Object> createTransaction(Transaction transaction) throws JsonProcessingException {
         String json = mapper.writeValueAsString(transaction);
-        logger.info("createTransaction - Data from Transaction: "+json);
+        logger.info("createTransaction - Data from Transaction: " + json);
 
+        AbstractMap<String, Object> validationMessages = ValdSer.validateTransactionInfomation(transaction);
 
-        //Step 1: Vaildate incoming data from the API Request
-        AbstractMap<String,Object> VaildationMessages = ValdSer.validateTransactionInfomation(transaction);
-           
-        // Step 2: Send the data through RabbitMQ for processing
-          if(VaildationMessages.isEmpty()){
-
-            //Send the transaction to be checked for if it is fraudlect or not 
+        if (validationMessages.isEmpty()) {
             messageSender.sendMessageIN(transaction);
 
+            // Poll for up to 5 seconds, checking every 0.5 seconds
+            int maxAttempts = 10;
+            int attempt = 0;
+            while (attempt < maxAttempts) {
+                UserCacheData cachedData = CahceTransaction.getUserCache(transaction.getUserId().toString());
+                List<Transaction> transactionUserData = (cachedData != null) ? cachedData.getTransactions() : null;
 
+                if (transactionUserData != null && !transactionUserData.isEmpty()) {
+                    Transaction latestTransaction = transactionUserData.get(transactionUserData.size() - 1);
+                    if (!"PENDING".equals(latestTransaction.getStatus())) {
+                        // Transaction processed
+                        String latestTransactionHour = latestTransaction.getTransaction_date().toString().substring(0, 13);
+                        String currentHour = LocalDateTime.now().toString().substring(0, 13);
+
+                        boolean isSameHour = latestTransactionHour.equals(currentHour);
+                        boolean isSameAmount = latestTransaction.getAmount().equals(transaction.getAmount());
+
+                        if (isSameHour && isSameAmount) {
+                            if (!"DECLINED".equals(latestTransaction.getStatus())) {
+                                validationMessages.put("Transaction Status", "Transaction Completed Successfully");
+                            } else {
+                                validationMessages.put("Transaction Status", "Transaction Failed due to possible fraudulent activity");
+                            }
+                        } else {
+                            validationMessages.put("Transaction Status", "Transaction is still being processed, please try again in a few seconds using the transaction ID: " + transaction.getTransactionId());
+                        }
+                        break;
+                    }
+                }
+                try {
+                    Thread.sleep(500); // Wait 0.5 seconds before next check
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.error("Thread was interrupted during polling", e);
+                    break;
+                }
+                attempt++;
+            }
         }
 
-        /* Step 3: Run a query to check if the data was processed and not flagged
-
-            i) Use repo call and use the UserID, sort by the lastest date and check that the date is the same as the System date
-
-            a) If no errors with this
-                - Set the status of transaction to be completed
-            
-            b) If there an issue 
-                - Set the status as bad and tell the user that their transaction failed
-        */
-
-
-        //Change User address to follow this data struct Street Name, City, Province, Area code, Country
-
-
-        /*
-            Step 4: Check if the transaction is bad or not ( Use the service )
-         *  - Service will preform a set of checks on the transaction Data and will either give it one of the following status 
-         *      O Completed
-         *      O Failed
-         *  -  it will log it into the Database with the transaction table either it was complted or not 
-        */
-
-
-        //Step 3A: if transaction is good, send the transaction ID and the status back to the user
-
-        //Step 3B: If failed transaction: Log the infomation inside of the alerts Database and send the message back to the through RabbitMQ
-    
-
-
+        return validationMessages;
         
-    
-     
+        
+    }
+
+    public AbstractMap<String,Object> getTransaction(UUID transactionID, Transaction transaction) throws JsonProcessingException{
+        // Perform business logic, such as validation or other processing if needed
+        logger.info("TransactionID being passed: "+transactionID);
+
+        AbstractMap<String, Object> VaildationMessages = ValdSer.VaildateTransactionGet(transactionID,transaction);
+        
+        // Save user to the database via the repository
+        if (VaildationMessages.size()==0){
+
+            logger.error("Vaild : no isue vaildatting transaction detials ");
+            
+        }
+
+        else{
+            logger.error("Error: issue vaildatting transaction detials ");
+            
+        }
+
         
         return VaildationMessages;
         
         
     }
-
-
 
     
 }

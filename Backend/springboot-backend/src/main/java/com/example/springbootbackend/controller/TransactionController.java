@@ -25,7 +25,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/Transaction")
-//@PreAuthorize("isAuthenticated()")
+
 public class TransactionController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);

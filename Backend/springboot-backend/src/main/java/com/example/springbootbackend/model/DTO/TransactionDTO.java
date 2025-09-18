@@ -1,16 +1,39 @@
 package com.example.springbootbackend.model.DTO;
 
 import com.example.springbootbackend.model.Transaction;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Entity
+@Table(name = "transaction_dto")
+@Schema(description = "Transaction Data Transfer Object")
 public class TransactionDTO {
+
+    @Id
+    @Schema(description = "Transaction ID")
     private UUID transactionId;
+
+    @Schema(description = "User ID")
     private UUID userId;
+
+    @Schema(description = "Transaction amount")
     private double amount;
+
+    @Schema(description = "Transaction location")
     private String location;
+
+    @Schema(description = "Transaction status")
     private String status;
+
+    @Schema(description = "Transaction date/time")
     private OffsetDateTime transaction_date;
+
+    // No-args constructor required by JPA
+    public TransactionDTO() {}
 
     public TransactionDTO(Transaction transaction) {
         this.transactionId = transaction.getTransactionId();

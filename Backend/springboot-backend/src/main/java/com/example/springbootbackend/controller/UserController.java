@@ -16,9 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
-import java.util.Optional;
 import java.util.UUID;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 
 
 
@@ -27,8 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 public class UserController {
 
-    @Autowired
-    private MessageSender messageSender;
+    
 
     @Autowired
     private UserService userService; 
@@ -38,10 +36,7 @@ public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    @RequestMapping("/")
-    public String home() {
-        return "Welcome to the homepage!";
-    }
+    
 
     @PostMapping("/add")
     public ResponseEntity<Object> addUser(@RequestBody User user) {

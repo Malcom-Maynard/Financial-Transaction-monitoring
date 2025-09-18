@@ -114,5 +114,19 @@ public class RedisUserCacheService {
     return null;
 }
 
+    public void updateTransaction(String userId, Transaction updatedTransaction) {
+        UserCacheData existing = getUserCache(userId);
+        if (existing != null && existing.getTransactions() != null) {
+            for (int i = 0; i < existing.getTransactions().size(); i++) {
+                Transaction tx = existing.getTransactions().get(i);
+                if (tx.getTransactionId().equals(updatedTransaction.getTransactionId())) {
+                    existing.getTransactions().set(i, updatedTransaction);
+                    saveUserCache(userId, existing);
+                    return;
+                }
+            }
+        }
+    }
+
     
 }

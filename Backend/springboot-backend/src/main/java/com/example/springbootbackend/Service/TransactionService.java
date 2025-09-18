@@ -43,7 +43,7 @@ public class TransactionService {
     private MessageSender messageSender;
 
     @Autowired    
-    private RedisUserCacheService CahceTransaction;
+    private RedisUserCacheService cacheService;
 
     private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
 
@@ -63,7 +63,7 @@ public class TransactionService {
             int maxAttempts = 10;
             int attempt = 0;
             while (attempt < maxAttempts) {
-                UserCacheData cachedData = CahceTransaction.getUserCache(transaction.getUserId().toString());
+                UserCacheData cachedData = cacheService.getUserCache(transaction.getUserId().toString());
                 List<Transaction> transactionUserData = (cachedData != null) ? cachedData.getTransactions() : null;
 
                 if (transactionUserData != null && !transactionUserData.isEmpty()) {
@@ -116,7 +116,7 @@ public class TransactionService {
         if (VaildationMessages.size()==0){
 
             //Pull from Cache
-            Transaction transactionData = CahceTransaction.getTransactionById(transaction.getUserId().toString(), transactionID.toString());
+            Transaction transactionData = cacheService.getTransactionById(transaction.getUserId().toString(), transactionID.toString());
 
             if(transactionData != null){
                 String json = mapper.writeValueAsString(transactionData);
@@ -161,6 +161,52 @@ public class TransactionService {
         return VaildationMessages;
         
         
+    }
+
+    public AbstractMap<String, Object> updateTransaction(UUID transactionID, Transaction updatedTransaction) {
+        AbstractMap<String, Object> validationMessages = new HashMap<>();
+
+        Optional<Transaction> existingOpt = transactionRepo.findById(transactionID);
+        if (existingOpt.isEmpty()) {
+            validationMessages.put("Transaction Status", "Transaction not found");
+            return validationMessages;
+        }
+
+        Transaction existing = existingOpt.get();
+
+        // Update fields
+        existing.setAmount(updatedTransaction.getAmount());
+        existing.setLocation(updatedTransaction.getLocation());
+        existing.setStatus(updatedTransaction.getStatus());
+        existing.setTransaction_date(updatedTransaction.getTransaction_date());
+
+        transactionRepo.save(existing);
+
+        // Update cache
+        cacheService.updateTransaction(existing.getUserId().toString(), existing);
+
+        validationMessages.put("Transaction Status", "Transaction updated successfully");
+        validationMessages.put("Transaction Data", existing);
+        return validationMessages;
+    }
+
+    public AbstractMap<String, Object> deleteTransaction(UUID transactionID, Transaction transaction) {
+        AbstractMap<String, Object> validationMessages = new HashMap<>();
+
+        Optional<Transaction> existingOpt = transactionRepo.findById(transactionID);
+        if (existingOpt.isEmpty()) {
+            validationMessages.put("Transaction Status", "Transaction not found");
+            return validationMessages;
+        }
+
+        Transaction existing = existingOpt.get();
+        transactionRepo.deleteById(transactionID);
+
+        // Remove from cache
+        cacheService.removeTransactionById(existing.getUserId().toString(), transactionID.toString());
+
+        validationMessages.put("Transaction Status", "Transaction deleted successfully");
+        return validationMessages;
     }
 
     

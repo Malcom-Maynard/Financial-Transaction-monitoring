@@ -28,11 +28,11 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
-public class VaildationService {
+public class ValidationService {
 
     
     
-    private static final Logger logger = LoggerFactory.getLogger(VaildationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
     private AbstractMap<String,Object> VaildationPackage = new HashMap <String,Object>();
 
     private AbstractMap<String,Object> TestingVaildationPackage = new HashMap <String,Object>();
@@ -191,7 +191,7 @@ public class VaildationService {
          */ 
 
         if(CachedData==null){
-            logger.info("VaildationService: UserCacheData is null");
+            logger.info("ValidationService: UserCacheData is null");
             return "Null";
         }
 
@@ -204,7 +204,7 @@ public class VaildationService {
          Duration dur = Duration.between(LastUpdated, CurrentDateTime);
 
          if(dur.toDays()>152){
-            return "OutOfDatePersonalInfomation";
+            return "OutOfDatePersonalInformation";
          }
 
 

@@ -1,19 +1,16 @@
 package com.example.springbootbackend.Service.Reddis;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
 import com.example.springbootbackend.model.Transaction;
 import com.example.springbootbackend.model.UserCacheData;
-import com.example.springbootbackend.config.RedisConfig;
 
-import java.time.LocalDate;
+
+
 import java.time.LocalDateTime;
 @Service
 public class RedisUserCacheService {

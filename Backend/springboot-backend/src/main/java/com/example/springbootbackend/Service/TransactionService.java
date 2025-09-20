@@ -2,32 +2,23 @@ package com.example.springbootbackend.Service;
 
 
 import com.example.springbootbackend.model.Transaction;
-
 import com.example.springbootbackend.model.UserCacheData;
-
 import com.example.springbootbackend.repository.TransactionRepository;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.example.springbootbackend.Service.VaildationService;
 import com.example.springbootbackend.Service.Reddis.RedisUserCacheService;
 import com.example.springbootbackend.Service.rabbitmq.MessageSender;
-import com.example.springbootbackend.model.User;
+
 
 @Service
 public class TransactionService {
@@ -36,7 +27,7 @@ public class TransactionService {
     private TransactionRepository transactionRepo;  
 
     @Autowired
-    private VaildationService ValdSer;
+    private ValidationService validSer;
 
     @Autowired
     private MessageSender messageSender;
@@ -53,12 +44,13 @@ public class TransactionService {
         String json = mapper.writeValueAsString(transaction);
         logger.info("createTransaction - Data from Transaction: " + json);
 
-        AbstractMap<String, Object> validationMessages = ValdSer.validateTransactionInfomation(transaction);
+        AbstractMap<String, Object> validationMessages = validSer.validateTransactionInfomation(transaction);
 
         if (validationMessages.isEmpty()) {
             messageSender.sendMessageIN(transaction);
 
             // Poll for up to 5 seconds, checking every 0.5 seconds
+            //Done this way to allow for the async processing of the transaction to be completed 
             int maxAttempts = 10;
             int attempt = 0;
             while (attempt < maxAttempts) {
@@ -107,12 +99,12 @@ public class TransactionService {
         // Perform business logic, such as validation or other processing if needed
         logger.info("TransactionID being passed: "+transactionID);
 
-        AbstractMap<String, Object> VaildationMessages = ValdSer.VaildateTransactionGet(transactionID,transaction);
+        AbstractMap<String, Object> ValidationMessages = validSer.VaildateTransactionGet(transactionID,transaction);
         
         // Save user to the database via the repository
 
         //Pull the transaction from the cache if its there or from the Database if its not
-        if (VaildationMessages.size()==0){
+        if (ValidationMessages.size()==0){
 
             //Pull from Cache
             Transaction transactionData = cacheService.getTransactionById(transaction.getUserId().toString(), transactionID.toString());
@@ -120,8 +112,8 @@ public class TransactionService {
             if(transactionData != null){
                 String json = mapper.writeValueAsString(transactionData);
                 logger.info("Transaction Data found in Cache: " + json);
-                VaildationMessages.put("Transaction Data", transactionData);
-                return VaildationMessages;
+                ValidationMessages.put("Transaction Data", transactionData);
+                return ValidationMessages;
             }
 
             //Not found in cache, checking the Database
@@ -131,13 +123,13 @@ public class TransactionService {
                 if(transactionDataDB.isPresent()){
                     String json = mapper.writeValueAsString(transactionDataDB.get());
                     logger.info("Transaction Data found in Database: " + json);
-                    VaildationMessages.put("Transaction Data", transactionDataDB.get());
-                    return VaildationMessages;
+                    ValidationMessages.put("Transaction Data", transactionDataDB.get());
+                    return ValidationMessages;
                 }
                 else{
                     logger.error("No Transaction Data found in Database for Transaction ID: " + transactionID);
-                    VaildationMessages.put("Error","No Transaction Data found for Transaction ID: " + transactionID);
-                    return VaildationMessages;
+                    ValidationMessages.put("Error","No Transaction Data found for Transaction ID: " + transactionID);
+                    return ValidationMessages;
                 }
                 
             }
@@ -149,7 +141,7 @@ public class TransactionService {
 
 
             }
-            logger.error("Vaild(Get) : no isue vaildatting transaction details ");
+            logger.error("Valid(Get) : no issue validating transaction details ");
 
             
         
@@ -157,7 +149,7 @@ public class TransactionService {
        
 
         
-        return VaildationMessages;
+        return ValidationMessages;
         
         
     }

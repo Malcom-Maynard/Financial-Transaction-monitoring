@@ -1,9 +1,5 @@
 package com.example.springbootbackend.repository;
 
-
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +14,6 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-
 
     @Query("SELECT address FROM User u WHERE u.userId = :userID")
     String GetUsersAddress(@Param("userID") UUID userID);
@@ -38,24 +33,21 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.userId = :userID")
     Integer CheckUserID(@Param("userID") UUID userID);
 
+    @Query("""
+            SELECT new com.example.springbootbackend.model.DTO.UserPersonalInfoDTO(
+                u.username,
+                u.role,
+                u.address,
+                u.email,
+                u.userId,
+                u.phoneNumber,
+                u.name
 
-   @Query("""
-       SELECT new com.example.springbootbackend.model.DTO.UserPersonalInfoDTO(
-           u.username,
-           u.role,
-           u.address,
-           u.email,
-           u.userId,
-           u.phoneNumber,
-           u.name
-           
-       )
-       FROM User u
-       WHERE u.userId = :userID
-       """)
-Optional<UserPersonalInfoDTO> getUserPersonalInfo(@Param("userID") UUID userID);
-
-
+            )
+            FROM User u
+            WHERE u.userId = :userID
+            """)
+    Optional<UserPersonalInfoDTO> getUserPersonalInfo(@Param("userID") UUID userID);
 
     @Query("SELECT role FROM User u WHERE u.userId = :userID")
     String GetUserRole(@Param("userID") UUID userID);
@@ -65,28 +57,24 @@ Optional<UserPersonalInfoDTO> getUserPersonalInfo(@Param("userID") UUID userID);
     @Query("DELETE FROM User u WHERE u.userId = :userID")
     Integer DeleteUser(@Param("userID") UUID userID);
 
-
     @Modifying
     @Transactional
     @Query(value = """
-        WITH input AS (
-            SELECT * FROM json_populate_record(NULL::"user", cast(:jsonData AS json))
-        )
-        UPDATE "user"
-        SET name = COALESCE(input.name, "user".name),
-            email = COALESCE(input.email, "user".email),
-            phone_number = COALESCE(input.phone_number, "user".phone_number),
-            username = COALESCE(input.username, "user".username),
-            role = COALESCE(input.role, "user".role),
-            address = COALESCE(input.address, "user".address)
+            WITH input AS (
+                SELECT * FROM json_populate_record(NULL::"user", cast(:jsonData AS json))
+            )
+            UPDATE "user"
+            SET name = COALESCE(input.name, "user".name),
+                email = COALESCE(input.email, "user".email),
+                phone_number = COALESCE(input.phone_number, "user".phone_number),
+                username = COALESCE(input.username, "user".username),
+                role = COALESCE(input.role, "user".role),
+                address = COALESCE(input.address, "user".address)
 
 
-        FROM input
-        WHERE "user".user_id = :id
-        """, nativeQuery = true)
+            FROM input
+            WHERE "user".user_id = :id
+            """, nativeQuery = true)
     Integer UpdateUserInfo(@Param("jsonData") String jsonData, @Param("id") UUID id);
 
-
-
-    
 }

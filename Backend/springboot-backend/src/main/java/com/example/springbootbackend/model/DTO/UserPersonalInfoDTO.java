@@ -1,7 +1,7 @@
 package com.example.springbootbackend.model.DTO;
 import java.util.UUID;
 
-import jakarta.persistence.Entity;
+// Data Transfer Object for User Personal Information used for creating a deep coppy of user data when pulling from the Redis cache
 
 
 public class UserPersonalInfoDTO {
@@ -13,6 +13,7 @@ public class UserPersonalInfoDTO {
     private String phone_number;
     private String name;
 
+    // Constructor
     public UserPersonalInfoDTO(String username, String role, String address, String email, UUID userId, String phone_number, String name) {
         this.username = username;
         this.role = role;
@@ -23,6 +24,8 @@ public class UserPersonalInfoDTO {
         this.name = name;
     }
 
+
+    // Getters
     public String getUsername() {
         return username;
     }

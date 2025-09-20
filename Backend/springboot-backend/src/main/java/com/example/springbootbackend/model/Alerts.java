@@ -14,17 +14,14 @@ import jakarta.persistence.JoinColumn;
 import lombok.Data;
 import lombok.ToString;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ColumnResult;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
 import org.hibernate.annotations.CreationTimestamp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+
+
+//Java Class representing an alert generated for a transactions that have been flagged as potentially fraudulent or suspicious
 
 @Entity
 @Data

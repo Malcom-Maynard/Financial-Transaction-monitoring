@@ -3,6 +3,10 @@ package com.example.springbootbackend.model.DTO;
 import com.example.springbootbackend.Service.UserService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import jakarta.persistence.Entity;
@@ -15,31 +19,41 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//Created a Data Transfer Object for User to limit the exposure of sensitive data such as passwords when sending user data in API responses
 @Entity
-public class UserDTO {
+@Hidden
+public class UserDTO  {
 
     @Id   
     @GeneratedValue(generator = "UUID")
     @Column(name = "user_id", updatable = false, nullable = false)
     @JsonProperty("id")  // Rename "userId" to "id" in the JSON output
+    @Schema(description = "User ID")
     private UUID userId;
 
+    @Schema(description = "Users full name")
     private String name;
 
+    @Schema(description = "Users role")
     private String role;
 
+    @Schema(description = "Users phone number")  
     private String phoneNumber;
 
+    @Schema(description = "Users email address")
     private String email;
     
+    @Schema(description = "Users username")
     private String username;
 
+    @Schema(description = "Users address")
     private String address;
-
-     // Exclude password from the JSON response
+    
+    @JsonIgnore
     private String password;
     
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    //Print user data in a readable format, used early in development for debugging
     public String printData (){
 
         String msg = "\n\nData for user ID: "+this.getUserId()+
@@ -51,13 +65,10 @@ public class UserDTO {
         "\n"+"username: "+this.getUsername() +
         "\n"+"password: "+this.getPassword()+"\n\n" ;
 
-
-
-
         return msg;
     }
 
-    
+     //Print user data in a readable format, used early in development for debugging within a JSON format
     public String JSONOutput() {
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("{");

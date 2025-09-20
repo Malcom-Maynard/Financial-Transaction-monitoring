@@ -8,7 +8,6 @@ import com.example.springbootbackend.model.DTO.UserPersonalInfoDTO;
 import com.example.springbootbackend.repository.AlertsRepository;
 import com.example.springbootbackend.repository.TransactionRepository;
 import com.example.springbootbackend.repository.UserRepository;
-import com.example.springbootbackend.repository.Reddis.TransactionCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.springbootbackend.model.Alerts;

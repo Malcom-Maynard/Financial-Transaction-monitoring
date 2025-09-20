@@ -2,18 +2,17 @@ package com.example.springbootbackend.Service;
 
 
 import com.example.springbootbackend.model.Transaction;
-import com.example.springbootbackend.model.User;
+
 import com.example.springbootbackend.model.UserCacheData;
-import com.example.springbootbackend.model.DTO.UserDTO;
+
 import com.example.springbootbackend.repository.TransactionRepository;
-import com.example.springbootbackend.repository.UserRepository;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.lang.foreign.Linker.Option;
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
-import java.util.Dictionary;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;

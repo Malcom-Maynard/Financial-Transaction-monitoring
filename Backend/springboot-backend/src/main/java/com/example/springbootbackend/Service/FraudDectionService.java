@@ -1,12 +1,10 @@
 package com.example.springbootbackend.Service;
 
 import com.example.springbootbackend.model.*;
-import com.example.springbootbackend.model.DTO.UserDTO;
+
 import com.example.springbootbackend.repository.*;
-import com.example.springbootbackend.repository.Reddis.TransactionCache;
 import com.example.springbootbackend.Service.Reddis.RedisUserCacheService;
-import com.example.springbootbackend.Service.rabbitmq.MessageSender;
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -18,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
+
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,9 +37,6 @@ public class FraudDectionService {
 
     @Autowired
     private TransactionRepository TransactionDBRepo;
-
-    @Autowired
-    private TransactionCache TransactionCacheReddis;
 
     @Autowired
     private AlertsRepository AlertsDBRepo;

@@ -5,6 +5,26 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/*
+Class used to respesent cached user data, including their transactions and personal details
+
+Format of cached data:
+{
+    "transactions": [Array of Transaction objects],
+    "role": "user's role",
+    "userName": "user's username",
+    "userId": "user's unique identifier",
+    "address": "user's address",
+    "email": "user's email",
+    "phone_number": "user's phone number",
+    "name": "user's full name",
+    "LastUpdated": "timestamp of last update"
+}
+    Notes: Changes can be made with the Transaction array to use a key value pair have the trsansaction ID as the key and the Transaction object as the value
+    Making the processes of looking up a specific transaction faster and more efficient
+
+*/
 public class UserCacheData implements Serializable {
     
     private List<Transaction> transactions;
@@ -22,8 +42,6 @@ public class UserCacheData implements Serializable {
     // Constructors
     public UserCacheData() {}
 
-    
-
     public UserCacheData(List<Transaction> transactions, String address, String email, String LastUpdated, String role, String userName, String userId, String phone_number, String name) {
         this.transactions = transactions;
         this.address = address;
@@ -36,7 +54,6 @@ public class UserCacheData implements Serializable {
         this.name = name;  
 
     }
-
 
      public UserCacheData(UserCacheData data) {
 
@@ -69,7 +86,7 @@ public class UserCacheData implements Serializable {
         
     }
 
-    
+    // Getters and Setters
     public List<Transaction> getTransactions() {
         return transactions;
     }

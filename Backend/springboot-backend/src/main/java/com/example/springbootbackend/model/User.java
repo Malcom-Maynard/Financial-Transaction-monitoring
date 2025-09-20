@@ -3,43 +3,49 @@ package com.example.springbootbackend.model;
 import com.example.springbootbackend.Service.UserService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Entity
+@Schema(description = "User Entity object representing a user in the system")
 public class User {
 
     @Id   
     @GeneratedValue(generator = "UUID")
     @Column(name = "user_id", updatable = false, nullable = false)
     @JsonProperty("id")  // Rename "userId" to "id" in the JSON output
+    @Schema(description = "Unique identifier for the user", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID userId;
 
+    @Schema(description = "Full name of the user", example = "John Doe")
     private String name;
 
+    @Schema(description = "Role of the user in the system", example = "admin")
     private String role;
 
+    @Schema(description = "Phone number of the user", example = "+1234567890")
     private String phoneNumber;
 
+    @Schema(description = "Email address of the user", example = "JohnDoe1999@gmail.com")
     private String email;
     
+    @Schema(description = "Username for login", example = "johndoe")    
     private String username;
 
+    @Schema(description = "Address of the user", example = "John's Home, 123 Main St, City, Country")
     private String address;
 
-     // Exclude password from the JSON response
+    @JsonIgnore
     private String password;
     
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    //Print user data in a readable format, used early in development for debugging
     public String printData (){
 
         String msg = "\n\nData for user ID: "+this.getUserId()+
@@ -57,7 +63,7 @@ public class User {
         return msg;
     }
 
-    
+    //Print user data in a readable format, used early in development for debugging within a JSON format
     public String JSONOutput() {
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("{");
@@ -97,7 +103,6 @@ public class User {
     }
     
     // Getters and Setters
-
     public UUID getUserId() {
         return userId;
     }
